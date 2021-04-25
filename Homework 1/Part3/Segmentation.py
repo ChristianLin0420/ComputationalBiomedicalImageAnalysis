@@ -24,7 +24,7 @@ def plot_segmentation(original_image, seg_image):
     plt.show()
 
 ### get DICOM file from folder
-CT_chest_scans_path = "/Users/christianlin/Desktop/hw1/CT_chest_scans"
+CT_chest_scans_path = "/Users/christianlin/Desktop/NTHU/Junior_2/Computational Methods for Biomedical Image Analysis/Homework/ComputationalBiomedicalImageAnalysis/Homework 1/CT_chest_scans"
 CT_chest_folder_names = [name for name in os.listdir(CT_chest_scans_path)]
 Fisrt_CT_Dataset = [f for f in os.listdir(CT_chest_scans_path + "/" + CT_chest_folder_names[0])]
 
