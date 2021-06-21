@@ -1,15 +1,18 @@
 import os
 import numpy as np
 
+import csv
 import joblib
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 import scikitplot as skplt
+from alive_progress import alive_bar
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
+import sklearn.metrics as metrics
 
 CT_chest_scans_path = "/Users/christianlin/Desktop/NTHU/Junior_2/Computational Methods for Biomedical Image Analysis/Homework/ComputationalBiomedicalImageAnalysis/Homework 2/chest_xray"
 CT_chest_folder_names = [name for name in os.listdir(CT_chest_scans_path)]
@@ -61,7 +64,9 @@ print("train pneumonia set amount: {}".format(len(train_pneumonia_dataset)))
 print("validation normal set amount: {}".format(len(validation_normal_dataset)))
 print("validation pneumonia set amount: {}".format(len(validation_pneumonia_dataset)))
 
-##### Part 1 #####
+'''
+    Part 1
+'''
 
 # Original image metadata
 sample_image = train_normal_dataset[0]
@@ -89,7 +94,9 @@ print("processed_image min: ", min(processed_image.flatten()))
 print("processed_image max: ", max(processed_image.flatten()))
 print("processed_image mean: ", np.mean(processed_image.flatten()))
 
-##### Part 2 #####
+'''
+    Part 2
+'''
 
 # wirte csv file
 def write_csv(patient_id, predictions):
@@ -115,47 +122,71 @@ for data in train_pneumonia_dataset:
 for data in validation_pneumonia_dataset:
     validation_set.append(data)
 
-print("start train set resize")
-for index in range(10):
-    print(index)
-    train_set[index] = resize_image(train_set[index])
+### Reshape all dataset images to size (512, 512)
 
-train_set = train_set[:10]
+print("start train set resize:")
+with alive_bar(len(train_set)) as bar:
+    for index in range(len(train_set)):
+        train_set[index] = resize_image(train_set[index])
+        bar()
 
-print("start validation set resize")
-for index in range(len(validation_set)):
-    print(index)
-    validation_set[index] = resize_image(validation_set[index])
 
+print("start test set resize:")
+with alive_bar(len(test_dataset)) as bar:
+    for index in range(len(test_dataset)):
+        test_dataset[index] = resize_image(test_dataset[index])
+        bar()
+
+print("start validation set resize:")
+with alive_bar(len(validation_set)) as bar:
+    for index in range(len(validation_set)):
+        validation_set[index] = resize_image(validation_set[index])
+        bar()
 
 train_set_label = np.concatenate((train_normal_dataset_label, train_pneumonia_dataset_label))
 validation_set_label = np.concatenate((validation_normal_dataset_label, validation_pneumonia_dataset_label))
 
-train_set_label = train_set_label[:10]
 
-model = RandomForestClassifier(n_estimators = 10, random_state = 0)
-
+### initialize Random Forest Classifier
+model = RandomForestClassifier(n_estimators = 200, random_state = 10, verbose = 1)
 
 
 if len(train_set) == len(train_set_label):
+
+    ### Shuffle the data set and the label set so that it can improve the training quality
+    def unison_shuffled_copies(a, b):
+        assert len(a) == len(b)
+        p = np.random.permutation(len(a))
+        return a[p], b[p]
+
     train_set = np.array(train_set)
-
-    # for index in range(len(train_set)):
-    #     train_set[index] = train_set[index].reshape(262144)
-
+    test_dataset = np.array(test_dataset)
     validation_set = np.array(validation_set)
 
-    # for index in range(len(validation_set)):
-    #     validation_set[index] = validation_set[index].reshape(262144)
+    train_set, train_set_label = unison_shuffled_copies(train_set, train_set_label)
+    validation_set, validation_set_label = unison_shuffled_copies(validation_set, validation_set_label)
 
-    print(train_set)
+    print(train_set.shape)
+    print(test_dataset.shape)
+    print(validation_set.shape) 
 
-    model.fit(train_set[:5], train_set_label[:5])
+    ntsamples, ntx, nty = train_set.shape
+    nvsampels, nvx, nvy = validation_set.shape
+    nesamples, nex, ney = test_dataset.shape
+
+    ### Reshape the dataset as 1-dimensional data
+    train_set = train_set.reshape(ntsamples, ntx * nty)
+    test_dataset = test_dataset.reshape(nesamples, nex * ney)
+    validation_set = validation_set.reshape(nvsampels, nvx * nvy)
+
+    model.fit(train_set, train_set_label)
     
+    ### Save model
     joblib.dump(model, 'RFC_model')
 
     validation_set_predict = model.predict(validation_set)
-    valication_score = model.predict_proba(validation_set)
+    validation_score = model.predict_proba(validation_set)
+    validation_score = np.argmax(validation_score, axis=1)
 
     # Accuracy
     accuracy_score = accuracy_score(validation_set_label, validation_set_predict)
@@ -164,9 +195,12 @@ if len(train_set) == len(train_set_label):
     # Precision
     precision_score = precision_score(validation_set_label, validation_set_predict, average='weighted')
     # ROC curve
-    fpr, tpr, thresholds = metrics.roc_curve(validation_set_label, valication_score, pos_label = 2)
-    skplt.metrics.plot_roc(validation_set_label, valication_score)
-    plt.show()
+    fpr, tpr, thresholds = metrics.roc_curve(validation_set_label, validation_score, pos_label = 2)
+
+    # skplt.metrics.plot_roc(validation_set_label, validation_score)
+    # plt.show()
+
+    plt.savefig("ROC curve")
 
     print("Accuracy: {}".format(accuracy_score))
     print("Recall: {}".format(recall_score))
@@ -174,6 +208,10 @@ if len(train_set) == len(train_set_label):
     print("fpr: {}".format(fpr))
     print("tpr: {}".format(tpr))
     print("thresholds: {}".format(thresholds))
+
+    '''
+        Part 3
+    '''
 
     # Write csv
     test_set_predict = model.predict(test_dataset)

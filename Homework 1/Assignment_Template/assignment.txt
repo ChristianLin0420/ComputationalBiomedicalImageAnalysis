@@ -1,0 +1,117 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+\renewcommand\familydefault{\sfdefault}
+\usepackage{tgheros}
+
+\usepackage{amsmath,amssymb,amsthm,textcomp}
+\usepackage{enumerate}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{CJKutf8}
+
+\usepackage{geometry}
+\geometry{left=25mm,right=25mm,%
+bindingoffset=0mm, top=20mm,bottom=20mm}
+
+
+\linespread{1.3}
+
+\newcommand{\linia}{\rule{\linewidth}{0.5pt}}
+% my own titles
+\makeatletter
+\renewcommand{\maketitle}{
+\begin{center}
+\vspace{2ex}
+{\huge \textsc{\@title}}
+\vspace{1ex}
+\\
+\linia\\
+\@author \hfill \@date
+\vspace{4ex}
+\end{center}
+}
+\makeatother
+%%%
+
+
+%%%----------%%%----------%%%----------%%%----------%%%
+
+\begin{document}
+
+\title{Assignment 2}
+
+
+\author{
+\begin{CJK*}{UTF8}{gbsn}
+Name: 林柏均
+\end{CJK*}
+Student ID: s107062240}
+
+\date{05/01/2021}
+
+\maketitle
+
+\section{Try to give more explanation and discussion for your assignment}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{RandomForest.png}
+\caption{Image of Random Forest Classifier}
+\label{fig1}
+\end{figure}
+
+In this assignment, I choose Random Forest Classifier as my training model. And my Random Forest is constructed with 100 Decision trees. In the data preprocessing section, I combined all the files in NORMAL folder and PNEUMONIA folder as my training set and shuffled the collection so that it can improve the training quality. I also resized the chest scan image from different size to (512, 512) as my training input. And validation set is also combined from two validation folders. \par
+
+\section{List out what package you had used}
+
+\begin{itemize}
+  \item PIL: This package allows us to read out the image and convert it to array format
+  \item joblib: This can help us save the Sklearn model
+  \item alivebar: This can show the current loading or processing progress situation
+  \item sklearn: Import Random Forest Classifier and other accuracy indicators
+\end{itemize}
+
+\section{Training Result}
+
+
+\subsection{Part 1}
+
+Below is the first chest scan image in the training NORMAL folder:
+
+\begin{itemize}
+  \item sample image size:  (2234, 2359)
+  \item sample image min:  0
+  \item sample image max:  255
+  \item sample image mean:  124.39103010508906
+  \item processed image size:  (512, 512)
+  \item processed image min:  0.0
+  \item processed image max:  1.0
+  \item processed image mean:  0.48801540299957885
+\end{itemize}
+
+\subsection{Part 2}
+
+Random Forest Classifier Parameters:
+\begin{itemize}
+    \item Decision Tree Count: 200
+    \item Input array size: (512, 512)
+    \item Random state: 10
+\end{itemize}
+
+Random Forest Classifier Result:
+\begin{itemize}
+    \item Accuracy: 0.6875
+    \item Recall: 0.6875
+    \item Precision: 0.808
+\end{itemize}
+
+\section{Summary about what I have learned}
+
+From this assignment, I can review what I learned from the Machine Learning course content, and I can understand more about how Random Forest Classifier can do. In this assignment, the format of dataset is quite complex because of the different size of the image, therefore, it made me understand that data preprocessing is an essential process for Machine Learning. \par
+
+\end{document}
